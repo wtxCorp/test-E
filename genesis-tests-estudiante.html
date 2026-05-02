@@ -1,0 +1,796 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>GENESIS · Tests del Estudiante</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    min-height: 100vh;
+    background: #07070f;
+    font-family: Georgia, serif;
+    color: #e0e0e0;
+  }
+  /* TOP BAR */
+  .topbar {
+    border-bottom: 1px solid #12121e;
+    padding: 0 28px;
+    display: flex;
+    align-items: center;
+    height: 54px;
+    position: sticky;
+    top: 0;
+    background: #07070f;
+    z-index: 100;
+  }
+  .topbar-line {
+    position: absolute;
+    top: 0; left: 0; right: 0; height: 1px;
+    background: linear-gradient(90deg, transparent, #F5C842, #42C8F5, #A87FF0, #F590C0, transparent);
+  }
+  .topbar-logo {
+    font-size: 17px;
+    font-weight: 700;
+    letter-spacing: -0.5px;
+    background: linear-gradient(90deg, #F5C842, #42C8F5);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    margin-right: 16px;
+  }
+  .topbar-sub {
+    font-size: 11px;
+    color: #444;
+    font-family: monospace;
+    margin-right: auto;
+  }
+  .topbar-counter {
+    font-size: 11px;
+    color: #555;
+    font-family: monospace;
+    background: #111120;
+    border: 1px solid #1e1e30;
+    border-radius: 20px;
+    padding: 4px 12px;
+  }
+  /* MAIN */
+  .main {
+    padding: 28px;
+    max-width: 760px;
+    margin: 0 auto;
+  }
+  /* INTRO */
+  .intro { margin-bottom: 24px; }
+  .intro-label {
+    font-size: 11px;
+    color: #555;
+    font-family: monospace;
+    letter-spacing: 3px;
+    margin-bottom: 8px;
+  }
+  .intro-title {
+    font-size: clamp(22px, 4vw, 34px);
+    font-weight: 400;
+    letter-spacing: -1px;
+    margin: 0 0 10px;
+    font-family: Georgia, serif;
+    background: linear-gradient(135deg, #F5C842, #42C8F5);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+  .intro-desc {
+    font-size: 13px;
+    color: #666;
+    font-family: monospace;
+    line-height: 1.8;
+  }
+  /* SCORE SUMMARY */
+  #score-summary {
+    display: none;
+    background: #0c0c18;
+    border: 1px solid #1e1e30;
+    border-radius: 14px;
+    padding: 20px 24px;
+    margin-bottom: 16px;
+  }
+  .summary-label {
+    font-size: 10px;
+    color: #555;
+    font-family: monospace;
+    letter-spacing: 2px;
+    margin-bottom: 12px;
+  }
+  .summary-grid {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 8px;
+    margin-bottom: 12px;
+  }
+  .summary-cell {
+    text-align: center;
+    padding: 10px 6px;
+    background: #111120;
+    border: 1px solid #1e1e30;
+    border-radius: 8px;
+    transition: background 0.3s, border-color 0.3s;
+  }
+  .summary-cell-icon { font-size: 14px; color: #333; }
+  .summary-cell-score { font-size: 14px; font-weight: 700; font-family: monospace; }
+  .summary-cell-name { font-size: 8px; color: #444; font-family: monospace; margin-top: 2px; line-height: 1.2; }
+  /* FINAL SCORE */
+  #final-score {
+    display: none;
+    border-top: 1px solid #1e1e30;
+    padding-top: 14px;
+    display: none;
+    align-items: center;
+    gap: 16px;
+    flex-wrap: wrap;
+  }
+  .final-index-label { font-size: 10px; color: #555; font-family: monospace; letter-spacing: 1px; margin-bottom: 2px; }
+  .final-index-value {
+    font-size: 28px;
+    font-weight: 700;
+    font-family: Georgia, serif;
+    background: linear-gradient(90deg, #F5C842, #42C8F5, #F590C0);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+  .final-bar-wrap { flex: 1; min-width: 160px; }
+  .final-bar-bg { background: #1a1a2e; border-radius: 6px; height: 8px; overflow: hidden; }
+  .final-bar-fill {
+    height: 100%;
+    border-radius: 6px;
+    background: linear-gradient(90deg, #F5C842, #42C8F5, #F590C0);
+    transition: width 1s ease;
+  }
+  .final-bar-msg { font-size: 11px; color: #666; font-family: monospace; margin-top: 6px; }
+  /* CARD */
+  .card {
+    background: #0c0c18;
+    border: 1px solid #1e1e30;
+    border-radius: 14px;
+    overflow: hidden;
+    margin-bottom: 12px;
+    transition: border-color 0.3s, box-shadow 0.3s;
+  }
+  .card.open { /* dynamic via JS */ }
+  .card-header {
+    padding: 18px 22px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    border-bottom: 1px solid transparent;
+    position: relative;
+    transition: background 0.3s, border-color 0.3s;
+  }
+  .card-top-line {
+    position: absolute;
+    top: 0; left: 0; right: 0; height: 2px;
+    display: none;
+  }
+  .card-icon { font-size: 20px; transition: filter 0.3s; }
+  .card-meta { flex: 1; }
+  .card-module { font-size: 10px; color: #555; font-family: monospace; letter-spacing: 2px; margin-bottom: 2px; }
+  .card-title { font-size: 15px; color: #fff; font-weight: 700; font-family: Georgia, serif; }
+  .card-subtitle { font-size: 11px; color: #666; font-family: monospace; }
+  .card-right { display: flex; align-items: center; gap: 12px; }
+  .card-badge {
+    font-size: 10px;
+    color: #444;
+    font-family: monospace;
+    background: #111120;
+    border: 1px solid #1e1e30;
+    border-radius: 20px;
+    padding: 4px 10px;
+  }
+  .card-progress-count { text-align: right; }
+  .card-progress-count-n { font-size: 11px; font-family: monospace; }
+  .card-progress-count-l { font-size: 9px; color: #555; font-family: monospace; }
+  .card-arrow {
+    font-size: 16px;
+    color: #444;
+    transition: transform 0.3s;
+    display: inline-block;
+  }
+  .card-arrow.open { transform: rotate(180deg); }
+  /* BODY */
+  .card-body { padding: 24px; display: none; }
+  .card-body.open { display: block; }
+  /* RING */
+  .ring-wrap { width: 56px; height: 56px; position: relative; }
+  .ring-wrap svg { transform: rotate(-90deg); }
+  .ring-pct {
+    position: absolute; inset: 0;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 13px; font-weight: 700; font-family: monospace;
+  }
+  /* PROGRESS BAR */
+  .prog-row { display: flex; justify-content: space-between; margin-bottom: 6px; }
+  .prog-label { font-size: 10px; color: #555; font-family: monospace; }
+  .prog-pct { font-size: 10px; font-family: monospace; }
+  .prog-bar-bg { background: #1a1a2e; border-radius: 4px; height: 5px; overflow: hidden; margin-bottom: 8px; }
+  .prog-bar-fill { height: 100%; border-radius: 4px; transition: width 0.4s ease; }
+  .dots-row { display: flex; gap: 4px; flex-wrap: wrap; }
+  .dot { width: 6px; height: 6px; border-radius: 50%; transition: background 0.3s; }
+  /* QUESTION */
+  .q-label { font-size: 10px; font-family: monospace; letter-spacing: 1px; margin-bottom: 10px; }
+  .q-text { font-size: 16px; color: #fff; line-height: 1.6; font-family: Georgia, serif; font-weight: 600; }
+  /* OPTIONS */
+  .opts { margin: 20px 0 24px; }
+  .opt {
+    padding: 13px 16px;
+    border-radius: 9px;
+    margin-bottom: 8px;
+    cursor: pointer;
+    border: 1px solid #1e1e30;
+    background: #111120;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    transition: all 0.2s ease;
+  }
+  .opt.selected { transform: translateX(4px); }
+  .opt-radio {
+    width: 20px; height: 20px;
+    border-radius: 50%; flex-shrink: 0;
+    border: 2px solid #333;
+    background: transparent;
+    display: flex; align-items: center; justify-content: center;
+    transition: all 0.2s;
+  }
+  .opt-radio-inner { width: 7px; height: 7px; border-radius: 50%; background: #000; display: none; }
+  .opt-radio.selected .opt-radio-inner { display: block; }
+  .opt-letter { font-size: 10px; color: #555; font-family: monospace; margin-right: 8px; }
+  .opt-text { font-size: 13px; color: #aaa; font-family: monospace; line-height: 1.5; }
+  /* NAV */
+  .nav-row { display: flex; gap: 10px; justify-content: space-between; }
+  .btn-prev {
+    background: none;
+    border: 1px solid #1e1e30;
+    color: #888;
+    border-radius: 8px;
+    padding: 10px 18px;
+    font-size: 12px;
+    font-family: monospace;
+    cursor: pointer;
+    transition: color 0.2s;
+  }
+  .btn-prev:disabled { color: #333; cursor: not-allowed; }
+  .btn-next {
+    border: none;
+    border-radius: 8px;
+    padding: 10px 24px;
+    font-size: 12px;
+    font-family: monospace;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .btn-next:disabled { background: #1a1a2e; color: #444; cursor: not-allowed; box-shadow: none; }
+  /* RESULT */
+  .result-center { text-align: center; margin-bottom: 24px; }
+  .result-ring-wrap { display: inline-block; width: 110px; height: 110px; position: relative; }
+  .result-ring-wrap svg { transform: rotate(-90deg); }
+  .result-ring-pct {
+    position: absolute; inset: 0;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 20px; font-weight: 700; font-family: monospace;
+  }
+  .result-nivel-label { font-size: 11px; font-family: monospace; letter-spacing: 2px; margin-top: 12px; margin-bottom: 6px; }
+  .result-nivel-name { font-size: 22px; color: #fff; font-weight: 700; font-family: Georgia, serif; margin-bottom: 4px; }
+  .result-pts { font-size: 11px; color: #555; font-family: monospace; }
+  /* LEVEL STRIP */
+  .level-strip { display: flex; gap: 4px; margin-bottom: 20px; }
+  .level-strip-item { flex: 1; text-align: center; }
+  .level-strip-bar { height: 4px; border-radius: 2px; background: #1e1e30; margin-bottom: 5px; transition: background 0.3s; }
+  .level-strip-name { font-size: 9px; font-family: monospace; color: #444; line-height: 1.3; }
+  /* INTERPRETATION */
+  .interp {
+    border-left: 3px solid;
+    border-radius: 10px;
+    padding: 16px 18px;
+    margin-bottom: 20px;
+  }
+  .interp-label { font-size: 10px; font-family: monospace; letter-spacing: 1px; margin-bottom: 8px; }
+  .interp-text { font-size: 13px; color: #bbb; line-height: 1.8; font-family: Georgia, serif; font-style: italic; }
+  /* ANSWERS REVIEW */
+  .review-label { font-size: 10px; color: #555; font-family: monospace; letter-spacing: 1px; margin-bottom: 10px; }
+  .review-item {
+    margin-bottom: 8px;
+    padding: 10px 14px;
+    background: #111120;
+    border-radius: 8px;
+    border: 1px solid #1e1e30;
+  }
+  .review-num { font-size: 10px; color: #555; font-family: monospace; margin-bottom: 4px; }
+  .review-q { font-size: 11px; color: #777; font-family: monospace; margin-bottom: 5px; line-height: 1.4; }
+  .review-a { font-size: 12px; font-family: monospace; font-weight: 700; }
+  /* RESET */
+  .btn-reset {
+    width: 100%;
+    background: none;
+    border-radius: 9px;
+    padding: 11px;
+    font-size: 12px;
+    font-family: monospace;
+    cursor: pointer;
+    letter-spacing: 1px;
+    transition: background 0.2s;
+  }
+  .btn-reset:hover { background: rgba(255,255,255,0.04); }
+  /* FOOTER */
+  footer {
+    border-top: 1px solid #12121e;
+    padding: 14px 28px;
+    display: flex;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+  footer span { font-size: 11px; font-family: monospace; color: #333; }
+</style>
+</head>
+<body>
+
+<!-- TOP BAR -->
+<div class="topbar">
+  <div class="topbar-line"></div>
+  <span class="topbar-logo">GENESIS</span>
+  <span class="topbar-sub">Tests del Estudiante · 5 módulos · Mi proyecto de vida</span>
+  <span class="topbar-counter" id="global-counter">0/5 completados</span>
+</div>
+
+<div class="main">
+  <!-- INTRO -->
+  <div class="intro">
+    <div class="intro-label">PARA EL ESTUDIANTE</div>
+    <h1 class="intro-title">Mi Proyecto de Vida</h1>
+    <p class="intro-desc">
+      Estos 5 tests son para ti. No hay respuestas correctas ni incorrectas —<br/>
+      solo un espejo honesto de quién eres hoy y quién quieres llegar a ser.
+    </p>
+  </div>
+
+  <!-- SCORE SUMMARY -->
+  <div id="score-summary">
+    <div class="summary-label" id="summary-label">MI AVANCE · 0 DE 5 MÓDULOS COMPLETADOS</div>
+    <div class="summary-grid" id="summary-grid"></div>
+    <div id="final-score">
+      <div>
+        <div class="final-index-label">MI ÍNDICE GENESIS</div>
+        <div class="final-index-value" id="final-val">0 / 100</div>
+      </div>
+      <div class="final-bar-wrap">
+        <div class="final-bar-bg">
+          <div class="final-bar-fill" id="final-bar" style="width:0%"></div>
+        </div>
+        <div class="final-bar-msg" id="final-msg"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- CARDS container -->
+  <div id="cards-container"></div>
+</div>
+
+<footer>
+  <span>GENESIS · Tests del Estudiante · Proyecto de Vida</span>
+  <span>50 preguntas · 5 módulos · primera persona</span>
+</footer>
+
+<script>
+const TESTS = [
+  {
+    id:1, key:"incertidumbre", icon:"◈", color:"#F5C842", bg:"#1a1600",
+    title:"Mi Mundo Interior", subtitle:"¿Cuánto te conoces a ti mismo?",
+    preguntas:[
+      {q:"¿Sabes cuántas horas al día pasas en pantallas?", opts:["No tengo idea","Aproximadamente","Lo sé con exactitud","Lo registro conscientemente"]},
+      {q:"¿Puedes describir con claridad cómo te sientes la mayoría de los días?", opts:["No lo sé realmente","A veces puedo","Generalmente sí","Sí, con mucha claridad"]},
+      {q:"¿Sabes qué es lo que más te preocupa de tu futuro?", opts:["No lo he pensado","Algo vago","Tengo una idea","Lo tengo muy claro"]},
+      {q:"¿Con qué frecuencia hablas con un adulto sobre tus miedos?", opts:["Nunca","Solo en crisis","A veces","Es algo que hago con naturalidad"]},
+      {q:"¿Sabes cuáles son tus 3 valores más importantes en la vida?", opts:["Nunca lo he pensado","Tengo ideas vagas","Los puedo nombrar","Los vivo conscientemente"]},
+      {q:"¿Cuándo algo te angustia, sabes qué hacer para calmarte?", opts:["No tengo estrategias","Rara vez encuentro algo","Tengo algunas cosas","Sí, tengo mis propias estrategias"]},
+      {q:"¿Entiendes por qué reaccionas como reaccionas ante situaciones difíciles?", opts:["No me lo he preguntado","A veces lo entiendo","Bastante","Sí, me conozco bien en eso"]},
+      {q:"¿Le contarías a alguien si tuvieras un problema serio?", opts:["Prefiero guardarlo solo","Con mucha dificultad","Probablemente sí","Sí, tengo a alguien de confianza"]},
+      {q:"¿Sabes qué quieres hacer con tu vida después del colegio?", opts:["No lo he pensado","Algo se me ocurre a veces","Tengo ideas que me gustan","Tengo un camino que me emociona"]},
+      {q:"¿Cuándo fue la última vez que tuviste una conversación profunda contigo mismo?", opts:["Nunca","No recuerdo cuándo","Hace poco","Esta semana"]},
+    ],
+    niveles:["Explorador inicial","Buscador","En sintonía","Autoconocimiento profundo"],
+    interpretacion:[
+      "Apenas estás empezando a conocerte — y eso está bien. Este es el momento perfecto para empezar a preguntar.",
+      "Tienes piezas sueltas. Las preguntas de este módulo son exactamente el camino.",
+      "Estás en un buen nivel de autoconocimiento para tu edad. Profundizar es el siguiente paso.",
+      "Te conoces muy bien. Eso es una ventaja enorme para construir tu proyecto de vida."
+    ]
+  },
+  {
+    id:2, key:"contenido", icon:"◎", color:"#42C8F5", bg:"#00141a",
+    title:"Mi Mundo Digital", subtitle:"¿Qué consumes y qué te hace online?",
+    preguntas:[
+      {q:"¿Sabes exactamente cuántas horas usas cada app por día?", opts:["No tengo idea","Algo aproximado","Lo sé bien","Lo registro activamente"]},
+      {q:"¿El contenido que consumes te inspira o solo te entretiene?", opts:["Solo me entretiene","Principalmente entretenimiento","Algo de los dos","Me nutre e inspira mucho"]},
+      {q:"¿Has tenido alguna experiencia negativa en redes (bullying, contenido dañino)?", opts:["Sí y no sé qué hacer","Sí pero lo manejé solo","Algo menor que resolví","No o sí y pedí ayuda"]},
+      {q:"¿Creas contenido propio además de consumir?", opts:["Solo consumo","He intentado algo","Creo algo ocasionalmente","Creo contenido regularmente"]},
+      {q:"¿El celular interrumpe tu sueño o el tiempo de estudio?", opts:["Sí, mucho","Bastante","Algo","Rara vez, tengo control"]},
+      {q:"¿Usas internet para aprender cosas que te apasionan fuera del colegio?", opts:["No, solo para entretenimiento","Rara vez","A veces","Sí, aprendo activamente"]},
+      {q:"¿Sabes filtrar información falsa o manipulada online?", opts:["No sé distinguirla","A veces me confundo","Bastante bien","Muy bien, soy crítico/a"]},
+      {q:"¿Sientes que las redes sociales afectan cómo te ves a ti mismo/a?", opts:["Sí, me afectan mucho","Bastante","Algo","Poco, tengo perspectiva propia"]},
+      {q:"¿Tienes acuerdos claros con tu familia sobre el uso de pantallas?", opts:["No hay acuerdos","Hay reglas que no cumplo","Hay acuerdos básicos","Sí, acuerdos que respeto"]},
+      {q:"¿Podrías pasar un fin de semana sin redes sociales sin angustia?", opts:["Imposible para mí","Muy difícil","Difícil pero podría","Sí, lo he hecho"]},
+    ],
+    niveles:["Consumidor pasivo","Consciente en desarrollo","Usuario crítico","Creador digital"],
+    interpretacion:[
+      "Las pantallas te consumen más de lo que tú las usas. Este módulo es clave para recuperar el control.",
+      "Tienes conciencia pero el hábito todavía manda. Un pequeño cambio diario hace una diferencia enorme.",
+      "Buen nivel de conciencia digital. El paso siguiente es usar esa conciencia para crear, no solo consumir.",
+      "Eres un usuario crítico y creativo. Eso te diferencia y te da una ventaja real en el mundo que viene."
+    ]
+  },
+  {
+    id:3, key:"sector", icon:"⬡", color:"#F5835B", bg:"#1a0700",
+    title:"Lo Que Me Importa del Mundo", subtitle:"¿Qué problemas te mueven por dentro?",
+    preguntas:[
+      {q:"¿Hay algún problema del mundo que te genera rabia, tristeza o ganas de actuar?", opts:["No lo he pensado","Algo vago","Sí, uno concreto","Sí, varios y claramente"]},
+      {q:"¿Sabes qué necesitas para sentirte bien en el colegio?", opts:["No lo sé","Algo idea","Bastante claro","Muy claro y lo busco activamente"]},
+      {q:"¿Te sientes comprendido/a por los adultos que te rodean?", opts:["Casi nunca","A veces","Generalmente sí","Sí, me siento muy visto/a"]},
+      {q:"¿Tienes un espacio seguro donde puedes ser tú mismo/a sin miedo?", opts:["No existe ese espacio","Casi no","Sí, alguno","Sí, varios"]},
+      {q:"¿Sabes qué materias o actividades te dan más energía?", opts:["Ninguna especialmente","Una o dos ideas","Sí, lo sé","Sí y las busco activamente"]},
+      {q:"¿Reconoces cuándo estás mal emocionalmente y necesitas ayuda?", opts:["Rara vez","A veces","Casi siempre","Sí, con claridad"]},
+      {q:"¿El colegio está respondiendo a lo que realmente necesitas aprender?", opts:["No, está muy lejos","Parcialmente","Bastante","Sí, o busco lo que falta por mi cuenta"]},
+      {q:"¿Sabes qué tipo de ambiente te permite aprender mejor?", opts:["No lo sé","Algo idea","Bastante claro","Muy claro y lo creo"]},
+      {q:"¿Te sientes parte y aceptado/a en tu grupo de pares?", opts:["No, me siento fuera","A veces sí","Generalmente sí","Sí, plenamente"]},
+      {q:"¿Has identificado qué es lo más urgente que necesitas crecer este año?", opts:["No lo he pensado","Tengo intuiciones","Tengo una idea","Sí, y estoy trabajando en ello"]},
+    ],
+    niveles:["Buscando brújula","Con antenas activas","Orientado/a","Con propósito claro"],
+    interpretacion:[
+      "Aún estás buscando qué te importa y qué necesitas. Esa búsqueda misma ya es el camino.",
+      "Tus antenas están activas. Falta convertir esas señales en claridad y acción.",
+      "Tienes buena orientación sobre tus necesidades. El siguiente paso es actuar desde ahí.",
+      "Sabes lo que te importa y lo que necesitas. Eso es raro a tu edad — y es un superpoder."
+    ]
+  },
+  {
+    id:4, key:"oportunidades", icon:"◇", color:"#6EC87A", bg:"#001a05",
+    title:"Mis Talentos y Fortalezas", subtitle:"¿En qué eres bueno/a sin darte cuenta?",
+    preguntas:[
+      {q:"¿Puedes nombrar 3 cosas que haces mejor que la mayoría?", opts:["No sabría qué decir","Una o dos vagamente","Sí, las tengo claras","Sí y las uso conscientemente"]},
+      {q:"¿Hay algo que haces y el tiempo pasa sin que lo notes?", opts:["Nada especial","Algo pero no sé qué es","Sí, una cosa","Sí, varias cosas claras"]},
+      {q:"¿Te piden ayuda tus compañeros en algo específico?", opts:["No, nadie me pide","Rara vez","A veces","Frecuentemente en algo concreto"]},
+      {q:"¿Crees en tu propio potencial para lograr lo que quieres?", opts:["Poco","A veces sí, a veces no","Generalmente sí","Sí, con convicción"]},
+      {q:"¿Tienes actividades fuera del colegio que desarrollan tus talentos?", opts:["Ninguna","Una sin compromiso","Una activa","Varias bien enfocadas"]},
+      {q:"¿Cuándo algo te sale bien, lo celebras o lo minimizas?", opts:["Lo ignoro o minimizo","A veces lo reconozco","Generalmente lo celebro","Lo celebro y aprendo de ello"]},
+      {q:"¿Sabes en qué campo o carrera podrías destacar?", opts:["No tengo idea","Algo vago","Una idea bastante clara","Sí, y me emociona"]},
+      {q:"¿Tienes confianza en tus capacidades para enfrentar lo que viene?", opts:["Poca confianza","Confianza irregular","Bastante confianza","Alta confianza fundada"]},
+      {q:"¿Te permites equivocarte sin destruirte por dentro?", opts:["El error me paraliza","Me cuesta mucho","Generalmente sí","Sí, el error es información"]},
+      {q:"¿Tienes un sueño grande aunque parezca imposible?", opts:["No tengo sueños claros","Algo vago me ronda","Tengo uno que me motiva","Sí, y trabajo hacia él"]},
+    ],
+    niveles:["Talento dormido","Descubriendo","Potencial activado","En pleno vuelo"],
+    interpretacion:[
+      "Tus talentos esperan ser vistos — por ti primero. Nadie puede mostrarte el camino hasta que tú lo veas.",
+      "Estás descubriendo. Cada nueva experiencia es una pista más de quién eres en profundidad.",
+      "Tu potencial está activado. El reto ahora es enfocarlo y desarrollarlo con intención.",
+      "Sabes quién eres y qué puedes. Ese nivel de claridad a tu edad es extraordinario."
+    ]
+  },
+  {
+    id:5, key:"organizaciones", icon:"⬢", color:"#A87FF0", bg:"#0a0014",
+    title:"Mi Red de Personas", subtitle:"¿Quién te acompaña en este camino?",
+    preguntas:[
+      {q:"¿Tienes un adulto fuera de tu familia en quien confías de verdad?", opts:["No tengo a nadie","Tal vez uno","Sí, uno","Sí, varios"]},
+      {q:"¿Tus amigos te conocen de verdad o solo la versión que muestras?", opts:["Solo ven lo que muestro","Algo conocen","Bastante bien","Me conocen profundamente"]},
+      {q:"¿Tienes alguien que te desafía a ser mejor sin juzgarte?", opts:["Nadie así","Tal vez alguien","Sí, uno","Sí, varios"]},
+      {q:"¿Te sientes capaz de pedir ayuda cuando la necesitas?", opts:["Nunca pido ayuda","Con mucha dificultad","A veces","Con naturalidad"]},
+      {q:"¿Tienes algún referente (persona real o pública) que inspira tu proyecto de vida?", opts:["No tengo referentes","Algo vago","Uno claro","Varios que me orientan"]},
+      {q:"¿Participas en alguna comunidad o grupo que te haga crecer?", opts:["Ninguno","Uno sin compromiso","Uno activo","Varios con impacto real"]},
+      {q:"¿Cuando tienes un problema serio, sabes a quién acudir?", opts:["A nadie","No estoy seguro/a","Sí, alguien","Sí, a varias personas distintas"]},
+      {q:"¿Tus relaciones cercanas te suman energía o te la quitan?", opts:["Generalmente me agotan","Mezcla de los dos","Generalmente me suman","Me suman mucho"]},
+      {q:"¿Tienes relaciones con personas mayores que te enriquezcan?", opts:["No tengo","Una o dos formales","Alguna real","Varias que valoro mucho"]},
+      {q:"¿Has buscado activamente conectar con personas que admiras?", opts:["Nunca","Lo he pensado pero no actuado","Una o dos veces","Sí, lo hago conscientemente"]},
+    ],
+    niveles:["Solo/a en el camino","Red en formación","Red sólida","Ecosistema vital"],
+    interpretacion:[
+      "Estás navegando solo/a. Construir tu red no es debilidad — es la decisión más inteligente que puedes tomar.",
+      "Tu red está formándose. Investir en esas relaciones hoy rinde frutos por décadas.",
+      "Tienes apoyo real. Cuida esas relaciones y sigue ampliando tu círculo.",
+      "Tu ecosistema de personas es una ventaja enorme. Ese capital relacional vale más que cualquier diploma."
+    ]
+  }
+];
+
+// STATE
+const state = {};
+TESTS.forEach(t => {
+  state[t.key] = { open: false, current: 0, answers: {}, done: false, selected: null };
+});
+const globalScores = {};
+
+function buildRing(pct, color, size) {
+  const r = (size - 12) / 2;
+  const circ = 2 * Math.PI * r;
+  const dash = (pct / 100) * circ;
+  return `
+    <svg width="${size}" height="${size}" viewBox="0 0 ${size} ${size}">
+      <circle cx="${size/2}" cy="${size/2}" r="${r}" fill="none"
+        stroke="#1e1e30" stroke-width="6"/>
+      <circle cx="${size/2}" cy="${size/2}" r="${r}" fill="none"
+        stroke="${color}" stroke-width="6"
+        stroke-dasharray="${dash} ${circ - dash}"
+        stroke-linecap="round"
+        style="filter:drop-shadow(0 0 6px ${color}80)"/>
+    </svg>`;
+}
+
+function renderCard(test) {
+  const s = state[test.key];
+  const totalAnswered = Object.keys(s.answers).length;
+  const maxScore = test.preguntas.length * 3;
+  const rawScore = Object.values(s.answers).reduce((acc, v) => acc + v, 0);
+  const pct = s.done ? Math.round((rawScore / maxScore) * 100) : 0;
+  const nivel = Math.min(3, Math.floor(pct / 26));
+  const prog = (totalAnswered / test.preguntas.length) * 100;
+  const q = test.preguntas[s.current];
+
+  // right badge
+  let rightBadge = '';
+  if (s.done) {
+    rightBadge = `<div class="ring-wrap">${buildRing(pct, test.color, 56)}<div class="ring-pct" style="color:${test.color}">${pct}%</div></div>`;
+  } else if (totalAnswered > 0 && !s.done) {
+    rightBadge = `<div class="card-progress-count">
+      <div class="card-progress-count-n" style="color:${test.color}">${totalAnswered}/${test.preguntas.length}</div>
+      <div class="card-progress-count-l">respondidas</div>
+    </div>`;
+  } else {
+    rightBadge = `<div class="card-badge">10 preguntas</div>`;
+  }
+
+  // BODY content
+  let bodyContent = '';
+  if (!s.done) {
+    // dots
+    const dotsHtml = test.preguntas.map((_, i) => {
+      let bg = '#1e1e30';
+      let shadow = 'none';
+      if (s.answers[i] !== undefined) { bg = test.color; }
+      else if (i === s.current) { bg = test.color + '60'; shadow = `0 0 6px ${test.color}`; }
+      return `<div class="dot" style="background:${bg};box-shadow:${shadow}"></div>`;
+    }).join('');
+
+    // options
+    const optsHtml = q.opts.map((opt, i) => {
+      const isSel = s.selected === i;
+      const border = isSel ? `${test.color}70` : '#1e1e30';
+      const bg = isSel ? `${test.color}12` : '#111120';
+      const shadow = isSel ? `0 0 12px ${test.color}15` : 'none';
+      const transform = isSel ? 'translateX(4px)' : 'none';
+      const letterColor = isSel ? test.color : '#555';
+      const textColor = isSel ? '#fff' : '#aaa';
+      const radioSel = isSel ? 'selected' : '';
+      return `<div class="opt${isSel ? ' selected' : ''}"
+        style="border-color:${border};background:${bg};box-shadow:${shadow};transform:${transform}"
+        onclick="selectOpt('${test.key}',${i})">
+        <div class="opt-radio${radioSel ? ' selected' : ''}" style="border-color:${isSel ? test.color : '#333'};background:${isSel ? test.color : 'transparent'}">
+          <div class="opt-radio-inner"></div>
+        </div>
+        <div>
+          <span class="opt-letter" style="color:${letterColor}">${String.fromCharCode(65 + i)}</span>
+          <span class="opt-text" style="color:${textColor}">${opt}</span>
+        </div>
+      </div>`;
+    }).join('');
+
+    bodyContent = `
+      <div style="margin-bottom:22px">
+        <div class="prog-row">
+          <span class="prog-label">Pregunta ${s.current + 1} de ${test.preguntas.length}</span>
+          <span class="prog-pct" style="color:${test.color}">${Math.round(prog)}% completado</span>
+        </div>
+        <div class="prog-bar-bg">
+          <div class="prog-bar-fill" style="width:${prog}%;background:${test.color};box-shadow:0 0 8px ${test.color}60"></div>
+        </div>
+        <div class="dots-row">${dotsHtml}</div>
+      </div>
+      <div style="margin-bottom:20px">
+        <div class="q-label" style="color:${test.color}">PREGUNTA ${s.current + 1}</div>
+        <p class="q-text">${q.q}</p>
+      </div>
+      <div class="opts">${optsHtml}</div>
+      <div class="nav-row">
+        <button class="btn-prev" onclick="prevQ('${test.key}')" ${s.current === 0 ? 'disabled' : ''}>← Anterior</button>
+        <button class="btn-next"
+          style="background:${s.selected === null ? '#1a1a2e' : test.color};color:${s.selected === null ? '#444' : '#000'};box-shadow:${s.selected !== null ? `0 0 12px ${test.color}40` : 'none'}"
+          onclick="nextQ('${test.key}')" ${s.selected === null ? 'disabled' : ''}>
+          ${s.current === test.preguntas.length - 1 ? 'Ver mi resultado ▶' : 'Siguiente →'}
+        </button>
+      </div>`;
+  } else {
+    // RESULT
+    const levelStrip = test.niveles.map((n, i) => {
+      const active = i <= nivel;
+      const isCurrent = i === nivel;
+      return `<div class="level-strip-item">
+        <div class="level-strip-bar" style="background:${active ? test.color : '#1e1e30'};box-shadow:${isCurrent ? `0 0 8px ${test.color}` : 'none'}"></div>
+        <div class="level-strip-name" style="color:${isCurrent ? test.color : '#444'}">${n}</div>
+      </div>`;
+    }).join('');
+
+    const reviewItems = test.preguntas.map((p, i) => {
+      const val = s.answers[i] || 0;
+      const bc = val === 3 ? test.color : val === 2 ? test.color + 'aa' : val === 1 ? '#F5A623' : '#E87070';
+      return `<div class="review-item">
+        <div class="review-num">P${i + 1} · ${['D','C','B','A'][val]}</div>
+        <div class="review-q">${p.q}</div>
+        <div class="review-a" style="color:${bc}">→ ${p.opts[val]}</div>
+      </div>`;
+    }).join('');
+
+    bodyContent = `
+      <div class="result-center">
+        <div class="result-ring-wrap">
+          ${buildRing(pct, test.color, 110)}
+          <div class="result-ring-pct" style="color:${test.color}">${pct}%</div>
+        </div>
+        <div class="result-nivel-label" style="color:${test.color}">NIVEL ${nivel + 1} DE 4</div>
+        <div class="result-nivel-name">${test.niveles[nivel]}</div>
+        <div class="result-pts">${rawScore} puntos de ${maxScore} posibles</div>
+      </div>
+      <div class="level-strip">${levelStrip}</div>
+      <div class="interp" style="background:${test.color}0e;border-color:${test.color}22;border-left-color:${test.color}">
+        <div class="interp-label" style="color:${test.color}">💡 LO QUE DICE TU RESULTADO</div>
+        <p class="interp-text">${test.interpretacion[nivel]}</p>
+      </div>
+      <div class="review-label">TUS RESPUESTAS</div>
+      ${reviewItems}
+      <button class="btn-reset" style="border:1px solid ${test.color}40;color:${test.color}" onclick="resetTest('${test.key}')">↺ Repetir test</button>`;
+  }
+
+  return `
+    <div class="card${s.open ? ' open' : ''}" id="card-${test.key}"
+      style="border-color:${s.open ? test.color + '40' : '#1e1e30'};box-shadow:${s.open ? `0 4px 24px ${test.color}12` : 'none'}">
+      <div class="card-header" onclick="toggleCard('${test.key}')"
+        style="background:${s.open ? test.bg : 'transparent'};border-bottom-color:${s.open ? test.color + '20' : 'transparent'}">
+        <div class="card-top-line" style="display:${s.open ? 'block' : 'none'};background:linear-gradient(90deg,transparent,${test.color},transparent)"></div>
+        <span class="card-icon" style="color:${test.color};filter:${s.open ? `drop-shadow(0 0 6px ${test.color})` : 'none'}">${test.icon}</span>
+        <div class="card-meta">
+          <div class="card-module">MÓDULO ${String(test.id).padStart(2,'0')}</div>
+          <div class="card-title">${test.title}</div>
+          <div class="card-subtitle">${test.subtitle}</div>
+        </div>
+        <div class="card-right">
+          ${rightBadge}
+          <span class="card-arrow${s.open ? ' open' : ''}">▾</span>
+        </div>
+      </div>
+      <div class="card-body${s.open ? ' open' : ''}">${bodyContent}</div>
+    </div>`;
+}
+
+function renderAll() {
+  const container = document.getElementById('cards-container');
+  container.innerHTML = TESTS.map(t => renderCard(t)).join('');
+  renderSummary();
+  updateCounter();
+}
+
+function renderSummary() {
+  const completed = Object.keys(globalScores).length;
+  const summaryEl = document.getElementById('score-summary');
+  if (completed === 0) { summaryEl.style.display = 'none'; return; }
+  summaryEl.style.display = 'block';
+
+  document.getElementById('summary-label').textContent =
+    `MI AVANCE · ${completed} DE 5 MÓDULOS COMPLETADOS`;
+
+  const grid = document.getElementById('summary-grid');
+  grid.innerHTML = TESTS.map(t => {
+    const s = globalScores[t.key];
+    const hasSc = s !== undefined;
+    return `<div class="summary-cell" style="${hasSc ? `background:${t.color}10;border-color:${t.color}30` : ''}">
+      <div class="summary-cell-icon" style="color:${hasSc ? t.color : '#333'}">${t.icon}</div>
+      ${hasSc
+        ? `<div class="summary-cell-score" style="color:${t.color}">${s}</div>`
+        : `<div style="font-size:10px;color:#333;font-family:monospace">—</div>`}
+      <div class="summary-cell-name">${t.title.split(' ').slice(0,2).join(' ')}</div>
+    </div>`;
+  }).join('');
+
+  const finalEl = document.getElementById('final-score');
+  if (completed === 5) {
+    finalEl.style.display = 'flex';
+    const avg = Math.round(Object.values(globalScores).reduce((a,b)=>a+b,0) / completed);
+    document.getElementById('final-val').textContent = avg + ' / 100';
+    document.getElementById('final-bar').style.width = avg + '%';
+    document.getElementById('final-msg').textContent =
+      avg < 40 ? 'Este es tu punto de partida — y es perfecto para empezar' :
+      avg < 60 ? 'Tu proyecto de vida está despertando — sigue explorando' :
+      avg < 80 ? 'Tienes una base sólida — es momento de construir en serio' :
+      'Tu proyecto de vida está vivo y en marcha — eso es extraordinario';
+  } else {
+    finalEl.style.display = 'none';
+  }
+}
+
+function updateCounter() {
+  const completed = Object.keys(globalScores).length;
+  document.getElementById('global-counter').textContent = `${completed}/5 completados`;
+}
+
+function toggleCard(key) {
+  state[key].open = !state[key].open;
+  renderAll();
+}
+
+function selectOpt(key, idx) {
+  state[key].selected = idx;
+  const cardEl = document.getElementById(`card-${key}`);
+  const test = TESTS.find(t => t.key === key);
+  const s = state[key];
+  // re-render only the opts to avoid full re-render flicker
+  const q = test.preguntas[s.current];
+  const opts = cardEl.querySelectorAll('.opt');
+  opts.forEach((el, i) => {
+    const isSel = i === idx;
+    el.style.borderColor = isSel ? `${test.color}70` : '#1e1e30';
+    el.style.background = isSel ? `${test.color}12` : '#111120';
+    el.style.boxShadow = isSel ? `0 0 12px ${test.color}15` : 'none';
+    el.style.transform = isSel ? 'translateX(4px)' : 'none';
+    const radio = el.querySelector('.opt-radio');
+    radio.style.borderColor = isSel ? test.color : '#333';
+    radio.style.background = isSel ? test.color : 'transparent';
+    const inner = el.querySelector('.opt-radio-inner');
+    inner.style.display = isSel ? 'block' : 'none';
+    const letter = el.querySelector('.opt-letter');
+    letter.style.color = isSel ? test.color : '#555';
+    const text = el.querySelector('.opt-text');
+    text.style.color = isSel ? '#fff' : '#aaa';
+  });
+  // enable next button
+  const btnNext = cardEl.querySelector('.btn-next');
+  btnNext.disabled = false;
+  btnNext.style.background = test.color;
+  btnNext.style.color = '#000';
+  btnNext.style.boxShadow = `0 0 12px ${test.color}40`;
+}
+
+function nextQ(key) {
+  const s = state[key];
+  const test = TESTS.find(t => t.key === key);
+  if (s.selected === null) return;
+  s.answers[s.current] = s.selected;
+  if (s.current < test.preguntas.length - 1) {
+    s.current++;
+    s.selected = s.answers[s.current] !== undefined ? s.answers[s.current] : null;
+    renderAll();
+  } else {
+    // finish
+    const raw = Object.values(s.answers).reduce((a,b)=>a+b,0);
+    const finalPct = Math.round((raw / (test.preguntas.length * 3)) * 100);
+    s.done = true;
+    globalScores[key] = finalPct;
+    renderAll();
+  }
+}
+
+function prevQ(key) {
+  const s = state[key];
+  if (s.current === 0) return;
+  s.current--;
+  s.selected = s.answers[s.current] !== undefined ? s.answers[s.current] : null;
+  renderAll();
+}
+
+function resetTest(key) {
+  state[key] = { open: true, current: 0, answers: {}, done: false, selected: null };
+  delete globalScores[key];
+  renderAll();
+}
+
+// INIT
+renderAll();
+</script>
+</body>
+</html>
